@@ -21,6 +21,13 @@ public class FixedWing : MonoBehaviour
     private float _rollSpeed = 1f;
     [SerializeField]
     private float _yawSpeed = 1f;
+    [SerializeField]
+    private List<JetEngine> _engines = default;
+    #endregion
+
+    #region Accessors/Modifiers
+    public float Speed { get { return _speed; } }
+    public float LiftMod { get { return _liftMod; } }
     #endregion
 
     #region Private Members
@@ -30,10 +37,32 @@ public class FixedWing : MonoBehaviour
     private float _pitchAxis = 0f;
     private float _yawAxis = 0f;
     private float _rollAxis = 0f;
+    private float _throttle = 0f;
+
+    private float _speed = 0f;
+    private float _liftMod = 0f;
     #endregion
 
     #region Public Methods
     // TODO: These should be part of an interface
+    // MOAR TODO: Maybe also just make these properties?
+
+    public float Throttle
+    { 
+        get
+        {
+            return _throttle;
+        }
+        set
+        {
+            _throttle = value;
+            foreach(JetEngine engine in _engines)
+            {
+                engine.Throttle(_throttle);
+            }
+        }
+    }
+
     public void Pitch(float axis)
     {
         _pitchAxis = axis;
@@ -48,6 +77,47 @@ public class FixedWing : MonoBehaviour
     {
         _rollAxis = axis;
     }
+
+    public void IncreaseThrottle(float amount)
+    {
+        _throttle += amount;
+        if(_throttle > 1f)
+        {
+            _throttle = 1f;
+        }
+        foreach(JetEngine engine in _engines)
+        {
+            engine.IncreaseThrottle(_throttle);
+        }
+    }
+
+    public void DecreaseThrottle(float amount)
+    {
+        _throttle -= amount;
+        if(_throttle < 0f)
+        {
+            _throttle = 0f;
+        }
+        foreach(JetEngine engine in _engines)
+        {
+            engine.DecreaseThrottle(amount);
+        }
+    }
+
+    public float GetPitch()
+    {
+        return _pitchAxis;
+    }
+
+    public float GetYaw()
+    {
+        return _yawAxis;
+    }
+
+    public float GetRoll()
+    {
+        return _rollAxis;
+    }
     #endregion
 
     #region Unity Functions
@@ -55,55 +125,50 @@ public class FixedWing : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         _hb = GetComponent<HealthBar>();
+        Throttle = 1f;
     }
 
     private void FixedUpdate()
     {
         float speedSq = _rb.velocity.sqrMagnitude;
-        float speed = _rb.velocity.magnitude;
+        // Since I'm getting it every frame I might as well cache it
+        _speed = _rb.velocity.magnitude;
         float minSpeedSq = _minFlightSpeed * _minFlightSpeed;
         float zeroSpeedSq = _zeroFlightSpeed * _zeroFlightSpeed;
-        float liftMod = 1f;
+        this._liftMod = 1f;
         float velDif = Mathf.Max(Vector3.Dot(_rb.velocity.normalized, transform.forward), 0f);
-        
-        _rb.AddForce(Physics.gravity, ForceMode.Acceleration);
 
         // Check to make sure it's going fast enough
         if(speedSq < zeroSpeedSq)
         {
-            liftMod = 0f;
+            _liftMod = 0f;
         }
         else if(speedSq > zeroSpeedSq)
         {
-            liftMod = (speedSq - zeroSpeedSq) / (minSpeedSq - zeroSpeedSq);
+            _liftMod = (speedSq - zeroSpeedSq) / (minSpeedSq - zeroSpeedSq);
         }
 
         // Health of the air craft also plays a role. Damage reduces lift.
+        // velDif is the difference between the velocity of the aircraft and direction it is facing
         float maxLiftMod = Mathf.Min(_hb.Percent, _hullDamageThreshold) / _hullDamageThreshold;
-        liftMod *= velDif;
-        liftMod = Mathf.Clamp(liftMod, 0f, maxLiftMod);
+        _liftMod *= velDif;
+        _liftMod = Mathf.Clamp(_liftMod, 0f, maxLiftMod);
 
-        //// Maybe cache gravity? Would an if check for the value be faster than the square root?
-        //_rb.AddRelativeForce(Vector3.up * Physics.gravity.magnitude * liftMod * _rb.mass, ForceMode.Force);
-
-        //// Rotational forces due to drag
+        // Rotational forces due to drag
         Vector3 pitchCorrection = Vector3.Cross(transform.forward, _rb.velocity.normalized);
-        //Vector3 yawCorrection = Vector3.Cross(transform.right, _rb.velocity);
-        _rb.AddTorque(pitchCorrection * (1f - velDif) * 3f * speedSq * liftMod);
-        //_rb.AddTorque(yawCorrection * (1f - velDif) * speedSq * 0.5f);
+        _rb.AddTorque(pitchCorrection * (1f - velDif) * speedSq, ForceMode.Force);
 
         // Process controls
         _rb.AddRelativeTorque(Vector3.right * _pitchAxis * _pitchSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
         _rb.AddRelativeTorque(Vector3.back * _rollAxis * _rollSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
         _rb.AddRelativeTorque(Vector3.up * _yawAxis * _yawSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
 
-        Debug.Log(liftMod);
-
-        Vector3 counterVector = (transform.forward * speed) - _rb.velocity;
-        Vector3 lift = transform.up * liftMod;
+        // Counter vector is used to keep the plane from acting like a space ship. It basically provides
+        // lateral forces to try to keep the air craft going in the direction it's facing
+        Vector3 counterVector = (transform.forward * _speed) - _rb.velocity;
+        Vector3 lift = transform.up * _liftMod;
         _rb.AddForce(lift * _rb.mass, ForceMode.Force);
-        //counterVector.y *= liftMod;
-        _rb.AddForce(counterVector * _rb.mass * liftMod, ForceMode.Force);
+        _rb.AddForce(counterVector * _rb.mass * _liftMod, ForceMode.Force);
 
     }
     #endregion
