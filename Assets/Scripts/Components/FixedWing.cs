@@ -159,26 +159,23 @@ public class FixedWing : MonoBehaviour
         Vector3 velocity = _rb.velocity;
         Vector3 forward = transform.forward;
         Vector3 projectedForward = Vector3.Project(forward, velocity);
-        float angleOfAttack = Vector3.SignedAngle(forward, velocity, transform.right);
+        float angleOfAttack = Vector3.SignedAngle(transform.forward, velocity, transform.right);
 
+        // Lift and drag
         float liftCoefficient = _liftCurve.Evaluate(angleOfAttack);
         float dragCoefficient = _dragCurve.Evaluate(angleOfAttack);
         float lift = liftCoefficient * _wingArea * speedSq * 0.5f;
         float drag = dragCoefficient * _wingArea * speedSq * 0.5f;
-        Debug.Log(dragCoefficient);
         _rb.AddRelativeForce(Vector3.up * lift, ForceMode.Force);
         _rb.AddForce(-velocity.normalized * drag, ForceMode.Force);
 
         _liftMod = liftCoefficient;
 
-        // HACK for now
-        float velDif = 1f;
-        if(angleOfAttack < _criticalAngle)
-        {
-            _rb.AddRelativeTorque(Vector3.right * _pitchAxis * _pitchSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
-        }
-        _rb.AddRelativeTorque(Vector3.back * _rollAxis * _rollSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
-        _rb.AddRelativeTorque(Vector3.up * _yawAxis * _yawSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
+        // Controls
+        float limiter = Mathf.Clamp(1f - (angleOfAttack / _criticalAngle), 0f, 1f);
+        _rb.AddRelativeTorque(Vector3.right * _pitchAxis * limiter * _pitchSpeed * Mathf.Deg2Rad * _rb.mass, ForceMode.Force);
+        _rb.AddRelativeTorque(Vector3.back * _rollAxis * _rollSpeed * Mathf.Deg2Rad * _rb.mass, ForceMode.Force);
+        _rb.AddRelativeTorque(Vector3.up * _yawAxis * _yawSpeed * Mathf.Deg2Rad * _rb.mass, ForceMode.Force);
     }
     #endregion
 }
