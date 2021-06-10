@@ -23,6 +23,13 @@ public class FixedWing : MonoBehaviour
     private float _yawSpeed = 1f;
     [SerializeField]
     private List<JetEngine> _engines = default;
+    [Header("Flight Simulation")]
+    [SerializeField]
+    private float _wingArea = 3f;
+    [SerializeField]
+    private AnimationCurve _liftCurve = default;
+    [SerializeField]
+    private AnimationCurve _dragCurve = default;
     #endregion
 
     #region Accessors/Modifiers
@@ -33,6 +40,8 @@ public class FixedWing : MonoBehaviour
     #region Private Members
     private Rigidbody _rb = null;
     private HealthBar _hb = null;
+
+    private float _criticalAngle = 0f;
 
     private float _pitchAxis = 0f;
     private float _yawAxis = 0f;
@@ -126,6 +135,20 @@ public class FixedWing : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
         _hb = GetComponent<HealthBar>();
         Throttle = 1f;
+
+        // Find the critical angle of attack
+        // value = lift coefficient
+        // time = angle
+        float lc = 0f;
+        for(int i = 0; i < _liftCurve.length; i++)
+        {
+            Keyframe kf = _liftCurve[i];
+            if(kf.value > lc)
+            {
+                lc = kf.value;
+                _criticalAngle = kf.time;
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -133,43 +156,29 @@ public class FixedWing : MonoBehaviour
         float speedSq = _rb.velocity.sqrMagnitude;
         // Since I'm getting it every frame I might as well cache it
         _speed = _rb.velocity.magnitude;
-        float minSpeedSq = _minFlightSpeed * _minFlightSpeed;
-        float zeroSpeedSq = _zeroFlightSpeed * _zeroFlightSpeed;
-        this._liftMod = 1f;
-        float velDif = Mathf.Max(Vector3.Dot(_rb.velocity.normalized, transform.forward), 0f);
+        Vector3 velocity = _rb.velocity;
+        Vector3 forward = transform.forward;
+        Vector3 projectedForward = Vector3.Project(forward, velocity);
+        float angleOfAttack = Vector3.SignedAngle(forward, velocity, transform.right);
 
-        // Check to make sure it's going fast enough
-        if(speedSq < zeroSpeedSq)
+        float liftCoefficient = _liftCurve.Evaluate(angleOfAttack);
+        float dragCoefficient = _dragCurve.Evaluate(angleOfAttack);
+        float lift = liftCoefficient * _wingArea * speedSq * 0.5f;
+        float drag = dragCoefficient * _wingArea * speedSq * 0.5f;
+        Debug.Log(dragCoefficient);
+        _rb.AddRelativeForce(Vector3.up * lift, ForceMode.Force);
+        _rb.AddForce(-velocity.normalized * drag, ForceMode.Force);
+
+        _liftMod = liftCoefficient;
+
+        // HACK for now
+        float velDif = 1f;
+        if(angleOfAttack < _criticalAngle)
         {
-            _liftMod = 0f;
+            _rb.AddRelativeTorque(Vector3.right * _pitchAxis * _pitchSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
         }
-        else if(speedSq > zeroSpeedSq)
-        {
-            _liftMod = (speedSq - zeroSpeedSq) / (minSpeedSq - zeroSpeedSq);
-        }
-
-        // Health of the air craft also plays a role. Damage reduces lift.
-        // velDif is the difference between the velocity of the aircraft and direction it is facing
-        float maxLiftMod = Mathf.Min(_hb.Percent, _hullDamageThreshold) / _hullDamageThreshold;
-        _liftMod *= velDif;
-        _liftMod = Mathf.Clamp(_liftMod, 0f, maxLiftMod);
-
-        // Rotational forces due to drag
-        Vector3 pitchCorrection = Vector3.Cross(transform.forward, _rb.velocity.normalized);
-        _rb.AddTorque(pitchCorrection * (1f - velDif) * speedSq, ForceMode.Force);
-
-        // Process controls
-        _rb.AddRelativeTorque(Vector3.right * _pitchAxis * _pitchSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
         _rb.AddRelativeTorque(Vector3.back * _rollAxis * _rollSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
         _rb.AddRelativeTorque(Vector3.up * _yawAxis * _yawSpeed * Mathf.Deg2Rad * _rb.mass * velDif, ForceMode.Force);
-
-        // Counter vector is used to keep the plane from acting like a space ship. It basically provides
-        // lateral forces to try to keep the air craft going in the direction it's facing
-        Vector3 counterVector = (transform.forward * _speed) - _rb.velocity;
-        Vector3 lift = transform.up * _liftMod;
-        _rb.AddForce(lift * _rb.mass, ForceMode.Force);
-        _rb.AddForce(counterVector * _rb.mass * _liftMod, ForceMode.Force);
-
     }
     #endregion
 }

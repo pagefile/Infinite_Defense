@@ -389,7 +389,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -861,7 +861,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1085,7 +1085,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1328,7 +1328,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &900991652
 Transform:
   m_ObjectHideFlags: 0
@@ -1396,7 +1396,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1667,7 +1667,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2239,6 +2239,91 @@ MonoBehaviour:
   _yawSpeed: 25
   _engines:
   - {fileID: 1576266937}
+  _wingArea: 5
+  _liftCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -30.333916
+      value: -1.983253
+      inSlope: 0.0018057821
+      outSlope: 0.0018057821
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.29515705
+    - serializedVersion: 3
+      time: -17.183056
+      value: -1.6587235
+      inSlope: 0.051060606
+      outSlope: 0.051060606
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.19487
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.18727887
+      value: 0.18967292
+      inSlope: 0.09009078
+      outSlope: 0.09009078
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 14.475502
+      value: 1.2795488
+      inSlope: 0.08147289
+      outSlope: 0.08147289
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.08775298
+      outWeight: 0.33321348
+    - serializedVersion: 3
+      time: 19.92543
+      value: 1.5073621
+      inSlope: 0.0042184303
+      outSlope: 0.0042184303
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.8280292
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40.21087
+      value: 0.5106324
+      inSlope: -0.11570861
+      outSlope: -0.11570861
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.10739782
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _dragCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.099609375
+      inSlope: -0.00014078431
+      outSlope: -0.00014078431
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.078703046
+    - serializedVersion: 3
+      time: 90.285385
+      value: 1.3015809
+      inSlope: 0.02282944
+      outSlope: 0.02282944
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.03738546
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &1576266934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2261,7 +2346,7 @@ Rigidbody:
   m_GameObject: {fileID: 1576266932}
   serializedVersion: 2
   m_Mass: 4000
-  m_Drag: 0.01
+  m_Drag: 0
   m_AngularDrag: 1
   m_UseGravity: 1
   m_IsKinematic: 0
@@ -2626,7 +2711,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3226,7 +3311,7 @@ PrefabInstance:
     - target: {fileID: 3144940635944251460, guid: 1e9c94f9c83ed0542bc1165c99d8ab14,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 98
+      value: 114.22
       objectReference: {fileID: 0}
     - target: {fileID: 3144940635944251460, guid: 1e9c94f9c83ed0542bc1165c99d8ab14,
         type: 3}
