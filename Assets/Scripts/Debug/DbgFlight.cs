@@ -35,7 +35,7 @@ public class DbgFlight : MonoBehaviour
     void Update()
     {
         _speedText.text = $"Flight Speed: {_player.Speed:N2}";
-        _liftModText.text = $"Lift Mod: {_player.LiftMod:N2}";
+        _liftModText.text = $"Lift Coefficient: {_player.LiftMod:N2}";
         _throttleText.text = $"Throttle: {_player.Throttle:N2}";
         _pitchSlider.value = _player.GetPitch();
         _rollSlider.value = _player.GetRoll();
